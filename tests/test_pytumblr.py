@@ -5,13 +5,7 @@ import json
 import io
 from httpretty import HTTPretty, httprettified
 import pytumblr
-
-# support to python3
-try:
-    from urllib.parse import parse_qs
-# support to python2
-except ImportError:
-    from urlparse import parse_qs
+from urlparse import parse_qs
 
 
 class TumblrRestClientTest(unittest.TestCase):
@@ -20,7 +14,7 @@ class TumblrRestClientTest(unittest.TestCase):
 
     def setUp(self):
         with open('tests/tumblr_credentials.json', 'r') as f:
-            credentials = json.load(f)
+            credentials = json.loads(f.read())
         self.client = pytumblr.TumblrRestClient(credentials['consumer_key'], credentials['consumer_secret'], credentials['oauth_token'], credentials['oauth_token_secret'])
 
     @httprettified
@@ -112,7 +106,7 @@ class TumblrRestClientTest(unittest.TestCase):
         response = self.client.follow("codingjester.tumblr.com")
         assert response == []
 
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert HTTPretty.last_request.method == "POST"
         assert experimental_body['url'][0] == 'codingjester.tumblr.com'
 
@@ -123,7 +117,8 @@ class TumblrRestClientTest(unittest.TestCase):
 
         response = self.client.unfollow("codingjester.tumblr.com")
         assert response == []
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert HTTPretty.last_request.method == "POST"
         assert experimental_body['url'][0] == 'codingjester.tumblr.com'
 
@@ -135,7 +130,7 @@ class TumblrRestClientTest(unittest.TestCase):
         response = self.client.reblog('seejohnrun', id='123', reblog_key="adsfsadf", state='coolguy', tags=['hello', 'world'])
         assert response == []
 
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert HTTPretty.last_request.method == 'POST'
         assert experimental_body['id'][0] == '123'
         assert experimental_body['reblog_key'][0] == 'adsfsadf'
@@ -150,7 +145,7 @@ class TumblrRestClientTest(unittest.TestCase):
         response = self.client.edit_post('seejohnrun', id='123', state='coolguy', tags=['hello', 'world'])
         assert response == []
 
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert HTTPretty.last_request.method == 'POST'
         assert experimental_body['id'][0] == '123'
         assert experimental_body['state'][0] == 'coolguy'
@@ -163,7 +158,8 @@ class TumblrRestClientTest(unittest.TestCase):
 
         response = self.client.like('123', "adsfsadf")
         assert response == []
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert HTTPretty.last_request.method == "POST"
         assert experimental_body['id'][0] == '123'
         assert experimental_body['reblog_key'][0] == 'adsfsadf'
@@ -175,7 +171,8 @@ class TumblrRestClientTest(unittest.TestCase):
 
         response = self.client.unlike('123', "adsfsadf")
         assert response == []
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert HTTPretty.last_request.method == "POST"
         assert experimental_body['id'][0] == '123'
         assert experimental_body['reblog_key'][0] == 'adsfsadf'
@@ -227,7 +224,8 @@ class TumblrRestClientTest(unittest.TestCase):
 
         response = self.client.create_link('codingjester.tumblr.com', url="http://google.com", tags=['omg', 'nice'])
         assert response == []
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert HTTPretty.last_request.method == "POST"
         assert experimental_body['tags'][0] == "omg,nice"
 
@@ -237,7 +235,7 @@ class TumblrRestClientTest(unittest.TestCase):
                                body='{"meta": {"status": 201, "msg": "OK"}, "response": []}')
 
         response = self.client.create_link('seejohnrun.tumblr.com', tags=[])
-        experimental_body = parse_qs(HTTPretty.last_request.body.decode("utf-8"))
+        experimental_body = parse_qs(HTTPretty.last_request.body)
         assert 'tags' not in experimental_body
 
     @httprettified
